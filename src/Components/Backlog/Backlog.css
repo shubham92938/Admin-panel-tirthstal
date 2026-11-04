@@ -1,0 +1,13 @@
+.backlog-page { max-width: 960px; margin: 0 auto; color: #17231d; }
+.backlog-page header { margin-bottom: 25px; }
+.backlog-page header > span { color: #176b4d; font-size: 11px; font-weight: 800; letter-spacing: .13em; text-transform: uppercase; }
+.backlog-page h1 { margin: 4px 0 6px; font-size: clamp(26px,3vw,34px); letter-spacing: -.035em; }
+.backlog-page header p { margin: 0; color: #68736c; font-size: 14px; }
+.backlog-list { display: grid; gap: 14px; }
+.backlog-list article { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; padding: 22px 24px; border: 1px solid #e1e6e2; border-radius: 12px; background: #fff; }
+.backlog-list h2 { margin: 0 0 7px; font-size: 17px; }
+.backlog-list p { max-width: 660px; margin: 0; color: #68736c; font-size: 13px; line-height: 1.6; }
+.backlog-list article > span { flex: 0 0 auto; padding: 5px 8px; border-radius: 5px; background: #fff3d8; color: #8b6111; font-size: 10px; font-weight: 800; }
+.backlog-page aside { margin-top: 24px; padding: 17px 20px; border-left: 3px solid #9ba79f; background: #eef1ed; color: #526057; font-size: 13px; }
+.backlog-page aside p { margin: 4px 0 0; }
+@media (max-width:600px) { .backlog-list article { flex-direction: column; gap: 14px; } }
