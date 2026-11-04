@@ -1,110 +1,42 @@
 import "./Sidebar.css";
-import React from "react";
-import { Link } from "react-router-dom"
-import {
-  LayoutDashboard,
-  Package,
-  TriangleAlert,
-  ChartColumn,
-  CalendarDays,
-  Users,
-  Settings,
-  X,
-  Layers,
-  LucideArrowUpFromLine,
-  HomeIcon,
-  Flame,
-  SparklesIcon,
-} from "lucide-react";
-import { GiTempleDoor, GiTempleGate } from "react-icons/gi";
-import { TbNoDerivatives } from "react-icons/tb";
-const Sidebar = ({isOpen , setIsOpen}) => {
+import { NavLink } from "react-router-dom";
+import { ClipboardList, HomeIcon, SparklesIcon, UserRound } from "lucide-react";
+import { GiTempleGate } from "react-icons/gi";
+import { Flame } from "lucide-react";
 
-  // console.log(isOpen);
-  // const slide = () => {
-  //   setIsOpen = false
-  // }
-  
+const NAV_ITEMS = [
+  { to: "/dashboard", label: "Dashboard", icon: HomeIcon },
+  { to: "/temple", label: "Temples", icon: GiTempleGate },
+  { to: "/dieties", label: "Deities", icon: Flame },
+  { to: "/festivals", label: "Festivals", icon: SparklesIcon },
+  { to: "/profile", label: "Profile", icon: UserRound },
+  { to: "/backlog", label: "Backend backlog", icon: ClipboardList },
+];
 
+export default function Sidebar({ isOpen }) {
   return (
-    <aside 
-          className= {
-            // isOpen
-            // ?"sidebar active"
-            // :"sidebar"
-            `sidebar ${isOpen ? "open" : "close"}`}
-            >
-
-     <div className="sidebar_top">
-      
-      <div className="sidebar__logo">
-
-        <div className="logo__icon">
-           <img src="../../public/image.png" alt="#" />
+    <aside className={`sidebar ${isOpen ? "open" : "close"}`}>
+      <div className="sidebar_top">
+        <div className="sidebar__logo">
+          <div className="logo__icon"><img src="/Image.png" alt="Tirthstal" /></div>
+          <h1>Tirthstal<span id="black">Admin</span></h1>
         </div>
-
-        <h1>Admin<span id="black">Panel</span></h1>
-    
       </div>
-      
-      {/* <button className="close-btn"
-                         onClick={() => setIsOpen(false)} > <X size = {22}/>
-      </button> */}
-      </div>
-      <nav>
-
+      <nav aria-label="Admin navigation">
         <ul className="sidebar__menu">
-
-          <li className="active"><Link to="/dashboard" className="link" >
-
-            <HomeIcon size={20} />
-
-            <span>Dashboard</span></Link>
-
-          </li>
-
-          <li><Link to="/temple" className="link">
-
-            <GiTempleGate size={20} />
-
-            <span>Temple</span></Link>
-
-          </li>
-
-          <li><Link to="/dieties" className="link">
-
-            <Flame size={20} />
-
-            <span>Deities</span></Link>
-
-          </li>
-          <li><Link to="/festivals" className="link">
-
-            <SparklesIcon size={20} />
-
-            <span>Festivals</span></Link>
-
-          </li>
-
-           </ul>
-
+          {NAV_ITEMS.map(({ to, label, icon: Icon }) => (
+            <li key={to}>
+              <NavLink to={to} className={({ isActive }) => `link ${isActive ? "active" : ""}`} title={label}>
+                <Icon size={20} /><span>{label}</span>
+              </NavLink>
+            </li>
+          ))}
+        </ul>
       </nav>
-
-      <div className="user-account">
-        <div className="badgeicon">
-           <img src="../../public/image.png" alt="" />
-        </div>
-        <div>
-        <h1 id="fresh">Tanjiro</h1>
-        <h3 id="owner">Owner</h3>
-      </div></div>
-
+      <NavLink to="/profile" className="user-account">
+        <div className="badgeicon"><img src="/Image.png" alt="" /></div>
+        <div><h1 id="fresh">Admin</h1><h3 id="owner">Account settings</h3></div>
+      </NavLink>
     </aside>
   );
-};
-
-export default Sidebar;
-
-
-
- 
+}

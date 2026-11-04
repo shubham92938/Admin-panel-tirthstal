@@ -23,3 +23,37 @@
 .main-layout.close .page-content {
   margin-left: 70px;
 }
+
+@media (max-width: 700px) {
+  .page-content {
+    padding: 18px 14px 32px;
+  }
+
+  .main-layout.open .page-content {
+    margin-left: 70px;
+  }
+
+  .main-layout.open .sidebar {
+    width: 70px;
+  }
+
+  .main-layout.open .sidebar__logo h1,
+  .main-layout.open .sidebar__menu li span,
+  .main-layout.open .user-account h1,
+  .main-layout.open .user-account h3 {
+    display: none;
+  }
+
+  .navbar.sidebar-open {
+    left: 70px;
+    width: calc(100% - 70px);
+  }
+
+  .navbar {
+    padding: 0 12px;
+  }
+
+  .profile-info {
+    display: none;
+  }
+}

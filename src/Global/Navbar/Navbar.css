@@ -109,6 +109,7 @@ background-image: linear-gradient(to top, #e6e9f0 0%, #eef1f5 100%);
 
 .profile {
   display: flex;
+  text-decoration: none;
   align-items: center;
   gap: 10px;
   

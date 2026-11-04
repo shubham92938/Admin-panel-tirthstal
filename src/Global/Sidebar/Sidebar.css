@@ -151,6 +151,29 @@ body {
 .sidebar__menu li.active .link svg {
   stroke: #c296ff;
 }
+
+.sidebar__menu li {
+  padding: 0;
+}
+
+.sidebar__menu .link {
+  width: 100%;
+  padding: 10px 9px;
+}
+
+.sidebar__menu .link.active {
+  background: #1a1a1a;
+  color: #c296ff;
+}
+
+.sidebar__menu .link.active svg {
+  stroke: #c296ff;
+}
+
+.user-account {
+  color: inherit;
+  text-decoration: none;
+}
 .user-account {
   margin-top: 375px;
   width: 100%;

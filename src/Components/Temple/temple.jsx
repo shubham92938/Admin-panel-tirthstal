@@ -1,174 +1,225 @@
-import React, { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { errorDetails } from "../../services/api";
+import {
+  deactivateTemple,
+  getTempleBySlug,
+  listTemples,
+  reactivateTemple,
+} from "../../services/temples";
+import TempleForm from "./TempleForm";
+import { needsTempleData } from "./templePayload";
 import "./temple.css";
 
-const Temple = () => {
-  const [form, setForm] = useState({
-    name: "", description: "", city: "", district: "", state: "",
-    address: "", website: "", openTime: "", closeTime: "",
-    facilities: [], nearbyTemples: "", images: [],
-  });
-  const [facilitiesInput, setFacilitiesInput] = useState("");
-  const [submitted, setSubmitted] = useState(false);
-
-  const facilityOptions = [
-    "Parking", "Prasad Counter", "Dharamshala", "Toilet", "Drinking Water",
-    "Medical Aid", "Shoe Stand", "Library", "Guest House", "Annadanam",
-  ];
-
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
-
-  const toggleFacility = (f) => {
-    setForm((prev) => ({
-      ...prev,
-      facilities: prev.facilities.includes(f)
-        ? prev.facilities.filter((x) => x !== f)
-        : [...prev.facilities, f],
-    }));
-  };
-
-  const handleImageChange = (e) => {
-    const files = Array.from(e.target.files);
-    setForm((prev) => ({ ...prev, images: files }));
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log("Temple Data:", form);
-    setSubmitted(true);
-    setTimeout(() => setSubmitted(false), 3000);
-  };
-
-  return (
-    <div className="form-page">
-      <div className="form-header">
-        <div className="form-header-icon">🛕</div>
-        <div>
-          <h1 className="form-title">Add Temple</h1>
-          <p className="form-subtitle">Enter temple details to publish on the website</p>
-        </div>
-      </div>
-
-      <form className="temple-form" onSubmit={handleSubmit}>
-
-        {/* Basic Info */}
-        <div className="form-section">
-          <h2 className="section-title">Basic Information</h2>
-          <div className="form-grid-2">
-            <div className="field">
-              <label>Temple Name *</label>
-              <input name="name" value={form.name} onChange={handleChange}
-                placeholder="e.g. Shri Kashi Vishwanath Temple" required />
-            </div>
-            <div className="field">
-              <label>Official Website</label>
-              <input name="website" value={form.website} onChange={handleChange}
-                placeholder="https://example.com" type="url" />
-            </div>
-          </div>
-          <div className="field">
-            <label>Description *</label>
-            <textarea name="description" value={form.description} onChange={handleChange}
-              placeholder="Describe the temple history, significance, and architecture..."
-              rows={4} required />
-          </div>
-        </div>
-
-        {/* Location */}
-        <div className="form-section">
-          <h2 className="section-title">Location</h2>
-          <div className="form-grid-3">
-            <div className="field">
-              <label>City *</label>
-              <input name="city" value={form.city} onChange={handleChange}
-                placeholder="e.g. Varanasi" required />
-            </div>
-            <div className="field">
-              <label>District *</label>
-              <input name="district" value={form.district} onChange={handleChange}
-                placeholder="e.g. Varanasi" required />
-            </div>
-            <div className="field">
-              <label>State *</label>
-              <input name="state" value={form.state} onChange={handleChange}
-                placeholder="e.g. Uttar Pradesh" required />
-            </div>
-          </div>
-          <div className="field">
-            <label>Full Address</label>
-            <input name="address" value={form.address} onChange={handleChange}
-              placeholder="Street, locality, pincode..." />
-          </div>
-        </div>
-
-        {/* Timings */}
-        <div className="form-section">
-          <h2 className="section-title">Timings</h2>
-          <div className="form-grid-2">
-            <div className="field">
-              <label>Opening Time *</label>
-              <input name="openTime" type="time" value={form.openTime}
-                onChange={handleChange} required />
-            </div>
-            <div className="field">
-              <label>Closing Time *</label>
-              <input name="closeTime" type="time" value={form.closeTime}
-                onChange={handleChange} required />
-            </div>
-          </div>
-        </div>
-
-        {/* Facilities */}
-        <div className="form-section">
-          <h2 className="section-title">Facilities</h2>
-          <div className="facility-grid">
-            {facilityOptions.map((f) => (
-              <button type="button" key={f}
-                className={`facility-chip ${form.facilities.includes(f) ? "active" : ""}`}
-                onClick={() => toggleFacility(f)}>
-                {form.facilities.includes(f) ? "✓ " : ""}{f}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Nearby Temples */}
-        <div className="form-section">
-          <h2 className="section-title">Nearby Temples</h2>
-          <div className="field">
-            <label>Nearby Temples</label>
-            <textarea name="nearbyTemples" value={form.nearbyTemples}
-              onChange={handleChange}
-              placeholder="List nearby temples separated by commas..."
-              rows={2} />
-          </div>
-        </div>
-
-        {/* Images */}
-        <div className="form-section">
-          <h2 className="section-title">Images</h2>
-          <div className="field">
-            <label>Upload Temple Images</label>
-            <div className="file-upload-area">
-              <input type="file" multiple accept="image/*"
-                onChange={handleImageChange} id="temple-images" />
-              <label htmlFor="temple-images" className="file-label">
-                <span className="upload-icon">📷</span>
-                <span>{form.images.length > 0
-                  ? `${form.images.length} image(s) selected`
-                  : "Click to upload images"}</span>
-              </label>
-            </div>
-          </div>
-        </div>
-
-        <button type="submit" className={`submit-btn ${submitted ? "success" : ""}`}>
-          {submitted ? "✓ Temple Saved!" : "Save Temple"}
-        </button>
-      </form>
-    </div>
-  );
+const INITIAL_FILTERS = {
+  search: "",
+  state: "",
+  district: "",
+  deity: "",
+  type: "",
+  sort: "",
 };
 
-export default Temple;
+function Feedback({ feedback, onDismiss }) {
+  if (!feedback) return null;
+  return (
+    <div className={`ts-alert ts-alert-${feedback.type}`} role={feedback.type === "error" ? "alert" : "status"}>
+      <div>
+        <strong>{feedback.message}</strong>
+        {feedback.fields?.length > 0 && (
+          <ul>{feedback.fields.map((item, index) => <li key={`${item.field}-${index}`}>{item.field}: {item.message}</li>)}</ul>
+        )}
+      </div>
+      {onDismiss && <button type="button" onClick={onDismiss} aria-label="Dismiss message">×</button>}
+    </div>
+  );
+}
+
+export default function Temple() {
+  const [temples, setTemples] = useState([]);
+  const [filters, setFilters] = useState(INITIAL_FILTERS);
+  const [page, setPage] = useState(1);
+  const [pagination, setPagination] = useState({ page: 1, pages: 1, total: 0 });
+  const [loading, setLoading] = useState(true);
+  const [feedback, setFeedback] = useState(null);
+  const [formTarget, setFormTarget] = useState(undefined);
+  const [deactivateTarget, setDeactivateTarget] = useState(null);
+  const [busyId, setBusyId] = useState(null);
+
+  const loadTemples = useCallback(async () => {
+    setLoading(true);
+    try {
+      const result = await listTemples({ ...filters, page, limit: 12 });
+      setTemples((current) => {
+        const inactive = current.filter((temple) => temple.isActive === false);
+        return [...result.temples, ...inactive];
+      });
+      setPagination(result.pagination);
+    } catch (error) {
+      setFeedback({ type: "error", ...errorDetails(error) });
+    } finally {
+      setLoading(false);
+    }
+  }, [filters, page]);
+
+  useEffect(() => {
+    const timer = window.setTimeout(loadTemples, filters.search ? 350 : 0);
+    return () => window.clearTimeout(timer);
+  }, [filters.search, loadTemples]);
+
+  const updateFilter = (event) => {
+    const { name, value } = event.target;
+    setPage(1);
+    setFilters((current) => ({ ...current, [name]: value }));
+  };
+
+  const openEditor = async (temple) => {
+    setBusyId(temple._id);
+    setFeedback(null);
+    try {
+      const complete = await getTempleBySlug(temple.slug);
+      setFormTarget({ ...temple, ...complete });
+    } catch (error) {
+      setFeedback({ type: "error", ...errorDetails(error) });
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const handleSaved = (saved, payload) => {
+    const record = { ...(formTarget || {}), ...payload, ...saved };
+    setTemples((current) => {
+      const exists = current.some((temple) => temple._id === record._id);
+      return exists
+        ? current.map((temple) => (temple._id === record._id ? record : temple))
+        : [record, ...current];
+    });
+    setFormTarget(undefined);
+    setFeedback({
+      type: "success",
+      message: formTarget ? "Temple updated successfully." : "Temple created successfully.",
+      fields: [],
+    });
+  };
+
+  const confirmDeactivation = async () => {
+    if (!deactivateTarget) return;
+    setBusyId(deactivateTarget._id);
+    setFeedback(null);
+    try {
+      await deactivateTemple(deactivateTarget._id);
+      setTemples((current) => current.map((temple) =>
+        temple._id === deactivateTarget._id ? { ...temple, isActive: false } : temple,
+      ));
+      setFeedback({ type: "success", message: `${deactivateTarget.name} was deactivated. You can reactivate it below.`, fields: [] });
+      setDeactivateTarget(null);
+    } catch (error) {
+      setFeedback({ type: "error", ...errorDetails(error) });
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const handleReactivation = async (temple) => {
+    setBusyId(temple._id);
+    setFeedback(null);
+    try {
+      const updated = await reactivateTemple(temple._id);
+      setTemples((current) => current.map((item) =>
+        item._id === temple._id ? { ...item, ...updated, isActive: true } : item,
+      ));
+      setFeedback({ type: "success", message: `${temple.name} is active again.`, fields: [] });
+    } catch (error) {
+      setFeedback({ type: "error", ...errorDetails(error) });
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const inactiveCount = temples.filter((temple) => temple.isActive === false).length;
+
+  return (
+    <div className="ts-page">
+      <header className="ts-page-header">
+        <div>
+          <span className="ts-eyebrow">Content management</span>
+          <h1>Temples</h1>
+          <p>Publish and maintain temple information for the Tirthstal website.</p>
+        </div>
+        <button className="ts-button ts-button-primary" type="button" onClick={() => setFormTarget(null)}>+ Add temple</button>
+      </header>
+
+      <aside className="ts-seed-note">
+        <span aria-hidden="true">i</span>
+        <div><strong>Server seed data</strong><p>The 34-temple Madhya Pradesh and Maharashtra seed is run on the server with <code>npm run seed:temples</code>. It is not run from this panel. Records marked “Needs data” are missing morning timings or images.</p></div>
+      </aside>
+
+      <Feedback feedback={feedback} onDismiss={() => setFeedback(null)} />
+
+      <section className="ts-panel">
+        <form className="ts-filters" onSubmit={(event) => event.preventDefault()}>
+          <label className="ts-filter-search"><span>Search</span><input name="search" value={filters.search} onChange={updateFilter} placeholder="Name, location or keyword" /></label>
+          <label><span>State</span><input name="state" value={filters.state} onChange={updateFilter} placeholder="All states" /></label>
+          <label><span>District</span><input name="district" value={filters.district} onChange={updateFilter} placeholder="All districts" /></label>
+          <label><span>Deity</span><input name="deity" value={filters.deity} onChange={updateFilter} placeholder="All deities" /></label>
+          <label><span>Type</span><input name="type" value={filters.type} onChange={updateFilter} placeholder="All types" /></label>
+          <label><span>Sort</span><select name="sort" value={filters.sort} onChange={updateFilter}><option value="">Default</option><option value="name">Name</option><option value="-name">Name (Z–A)</option><option value="rating">Rating</option><option value="-createdAt">Newest</option></select></label>
+          <button className="ts-button ts-button-secondary ts-clear-button" type="button" onClick={() => { setFilters(INITIAL_FILTERS); setPage(1); }}>Clear</button>
+        </form>
+
+        <div className="ts-list-meta">
+          <p><strong>{pagination.total}</strong> active temples in the backend{inactiveCount > 0 && <> · <strong>{inactiveCount}</strong> deactivated this session</>}</p>
+          {loading && <span className="ts-loading-label">Refreshing…</span>}
+        </div>
+
+        <div className="ts-table-wrap">
+          <table className="ts-table">
+            <thead><tr><th>Temple</th><th>Location</th><th>Deity / type</th><th>Morning timings</th><th>Status</th><th><span className="ts-sr-only">Actions</span></th></tr></thead>
+            <tbody>
+              {!loading && temples.length === 0 ? (
+                <tr><td colSpan={6} className="ts-empty">No temples match these filters.</td></tr>
+              ) : temples.map((temple) => {
+                const inactive = temple.isActive === false;
+                return (
+                  <tr key={temple._id || temple.slug} className={inactive ? "ts-inactive-row" : ""}>
+                    <td><div className="ts-temple-name"><strong>{temple.name}</strong><span>/{temple.slug || "no-slug"}</span></div></td>
+                    <td>{temple.district}<span className="ts-cell-subtitle">{temple.state}</span></td>
+                    <td>{temple.deity}<span className="ts-cell-subtitle">{temple.type || "No type"}</span></td>
+                    <td>{temple.timings?.morning || <span className="ts-muted">Not provided</span>}</td>
+                    <td><div className="ts-badges"><span className={`ts-badge ${inactive ? "ts-badge-inactive" : "ts-badge-active"}`}>{inactive ? "Inactive" : "Active"}</span>{needsTempleData(temple) && <span className="ts-badge ts-badge-warning">Needs data</span>}</div></td>
+                    <td><div className="ts-row-actions">
+                      <button type="button" className="ts-button ts-button-small ts-button-secondary" disabled={busyId === temple._id} onClick={() => openEditor(temple)}>{busyId === temple._id ? "Loading…" : "Edit"}</button>
+                      {inactive ? (
+                        <button type="button" className="ts-button ts-button-small ts-button-success" disabled={busyId === temple._id} onClick={() => handleReactivation(temple)}>{busyId === temple._id ? "Restoring…" : "Reactivate"}</button>
+                      ) : (
+                        <button type="button" className="ts-button ts-button-small ts-button-danger" disabled={busyId === temple._id} onClick={() => setDeactivateTarget(temple)}>Deactivate</button>
+                      )}
+                    </div></td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+
+        <footer className="ts-pagination">
+          <span>Page {pagination.page} of {pagination.pages}</span>
+          <div><button type="button" className="ts-button ts-button-secondary ts-button-small" disabled={page <= 1 || loading} onClick={() => setPage((current) => current - 1)}>Previous</button><button type="button" className="ts-button ts-button-secondary ts-button-small" disabled={page >= pagination.pages || loading} onClick={() => setPage((current) => current + 1)}>Next</button></div>
+        </footer>
+      </section>
+
+      <p className="ts-session-note">The public list API only returns active temples. Deactivated records remain available for reactivation during this admin session.</p>
+
+      {formTarget !== undefined && <TempleForm temple={formTarget} onClose={() => setFormTarget(undefined)} onSaved={handleSaved} />}
+
+      {deactivateTarget && (
+        <div className="ts-modal-backdrop" role="presentation" onMouseDown={() => setDeactivateTarget(null)}>
+          <section className="ts-modal ts-confirm-modal" role="alertdialog" aria-modal="true" aria-labelledby="deactivate-title" onMouseDown={(event) => event.stopPropagation()}>
+            <header className="ts-modal-header"><div><span className="ts-eyebrow">Confirm action</span><h2 id="deactivate-title">Deactivate {deactivateTarget.name}?</h2></div></header>
+            <div className="ts-modal-body"><p>This hides the temple from the public website. It does not permanently delete the record, and you can reactivate it.</p></div>
+            <footer className="ts-modal-footer"><button type="button" className="ts-button ts-button-secondary" onClick={() => setDeactivateTarget(null)}>Cancel</button><button type="button" className="ts-button ts-button-danger-solid" disabled={busyId === deactivateTarget._id} onClick={confirmDeactivation}>{busyId === deactivateTarget._id ? "Deactivating…" : "Deactivate temple"}</button></footer>
+          </section>
+        </div>
+      )}
+    </div>
+  );
+}
